@@ -57,8 +57,9 @@ func HTML(s string) (output string) {
 	output = strings.Replace(output, "&apos;", "'", -1)
 	output = strings.Replace(output, "&#34;", "\"", -1)
 	output = strings.Replace(output, "&#39;", "'", -1)
-	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space here is important, allow & not part of entity
-	output = strings.Replace(output, "&amp;amp; ", "& ", -1) // Again, NB space, deal with double amps from original &amp; in text
+	// NB spaces here are significant - we only allow & not part of entity
+	output = strings.Replace(output, "&amp; ", "& ", -1)
+	output = strings.Replace(output, "&amp;amp; ", "& ", -1)
 
 	return output
 }
