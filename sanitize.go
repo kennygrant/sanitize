@@ -9,13 +9,9 @@ import (
 	"strings"
 )
 
-// Strip html tags, replace common entities, and escape < and > in the result.
-// Later could consider taking options and allowing certain tags, attributes etc
+// Strip html tags, replace common entities, and escape <>&;'" in the result.
+// Note the returned text may contain entities as it is escaped by HTMLEscapeString, and most entities are not translated.
 func HTML(s string) (output string) {
-	// Does not use a regexp, but a simple set of replacement rules and a naive parser which strips all < >
-	// Could also take options ,options...map[string]string
-	// see rails sanitize, could have list of allowed tags, attributes etc
-	// would then need a proper state machine for parsing, possibly just built using yacc or similar
 
 	output = ""
 
@@ -23,41 +19,46 @@ func HTML(s string) (output string) {
 	if !strings.ContainsAny(s, "<>") {
 		output = s
 	} else {
-		// First replace line breaks with newlines, to preserve that formatting
+
+		// First remove line breaks etc as these have no meaning outside html tags (except pre)
+		// this means pre sections will lose formatting... but will result in less uninentional paras.
+		s = strings.Replace(s, "\n", "", -1)
+
+		// Then replace line breaks with newlines, to preserve that formatting
 		s = strings.Replace(s, "</p>", "\n", -1)
 		s = strings.Replace(s, "<br>", "\n", -1)
 		s = strings.Replace(s, "</br>", "\n", -1)
 
-		// Walk through the string removing anything which is surrounded by braces
-		// A VERY simple state machine which will only function on well-formed HTML
-		// Note malformed html without closing > will simply be remove all text after first <
+		// Walk through the string removing all tags
+		b := bytes.NewBufferString("")
 		inTag := false
 		for _, r := range s {
-			c := string(r)
-			if c == "<" {
+			switch r {
+			case '<':
 				inTag = true
-			} else if c == ">" {
+			case '>':
 				inTag = false
-			} else if !inTag {
-				output = output + c
+			default:
+				if !inTag {
+					b.WriteRune(r)
+				}
 			}
-
 		}
-
+		output = b.String()
 	}
 
-	// In case we have missed any tags above, escape the text
-	// // <, >, &, ' and ". 
+	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ". 
 	output = template.HTMLEscapeString(output)
 
-	// Undo any unecessary entities created by html escape, as this will be plain text
-	output = strings.Replace(output, "&amp;amp;", "&", -1)
-	output = strings.Replace(output, "&amp;", "&", -1)
+	// Remove a few common harmless entities, to arrive at something more like plain text
+	// This relies on having removed *all* tags above
 	output = strings.Replace(output, "&nbsp;", " ", -1)
 	output = strings.Replace(output, "&quot;", "\"", -1)
 	output = strings.Replace(output, "&apos;", "'", -1)
 	output = strings.Replace(output, "&#34;", "\"", -1)
 	output = strings.Replace(output, "&#39;", "'", -1)
+	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space here is important, allow & not part of entity
+	output = strings.Replace(output, "&amp;amp; ", "& ", -1) // Again, NB space, deal with double amps from original &amp; in text
 
 	return output
 }

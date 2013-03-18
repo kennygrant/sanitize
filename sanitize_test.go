@@ -50,19 +50,30 @@ func TestName(t *testing.T) {
 	}
 }
 
+// Test with some malformed or malicious html
+// NB because we remove all tokens after a < until the next >
+// and do not attempt to parse, we should be safe from invalid html, 
+// but will sometimes completely empty the string if we have invalid input
 var html = []Test{
+	{`&amp;#x000D;`, `&amp;amp;#x000D;`},
+	{`<invalid attr="invalid"<,<p><p><p><p><p>`, ""},
+	{"<b><p>Bold </b> Not bold</p>\nAlso not bold.", "Bold  Not bold\nAlso not bold."},
+	{"`FOO&#x000D;ZOO", "`FOO&amp;#x000D;ZOO"},
+	{`<script><!--<script </s`, ""},
+	{`<a href="/" alt="Fab.com | Aqua Paper Map 22"" title="Fab.com | Aqua Paper Map 22" - fab.com">test</a>`, "test"},
+	{"<p</p>?> or <p id=0</p> or <<</>><ASDF><@$!@£M<<>>>>>>>>>>>>>><>***************aaaaaaaaaaaaaaaaaaaaaaaaaa>", " or ***************aaaaaaaaaaaaaaaaaaaaaaaaaa"},
 	{"<p>Some text</p>", "Some text\n"},
 	{"Something</br>Some more", "Something\nSome more"},
 	{`<a href="http://www.example.com"?>This is a 'test' of <b>bold</b> &amp; <i>italic</i></a> </br> invalid markup.<//data>><alert><script CDATA[:Asdfjk2354115nkjafdgs]>. <div src=">">><><img src="">`, "This is a 'test' of bold & italic \n invalid markup.. \""},
 	{"<![CDATA[<sender>John Smith</sender>]]>", "John Smith]]"},
 	{"<!-- <script src='blah.js' data-rel='fsd'> --> This is text", " -- This is text"},
 	{"<style>body{background-image:url(http://www.google.com/intl/en/images/logo.gif);}</style>", "body{background-image:url(http://www.google.com/intl/en/images/logo.gif);}"},
-	{`&lt;iframe src="" attr=""&gt;>>>>>`, `&lt;iframe src="" attr=""&gt;`},
+	{`&lt;iframe src="" attr=""&gt;>>>>>`, `&amp;lt;iframe src="" attr=""&amp;gt;`},
 	{`<IMG """><SCRIPT>alert("XSS")</SCRIPT>">`, `alert("XSS")"`},
 	{`<IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
 	{`<IMG SRC=JaVaScRiPt:alert('XSS')&gt;`, ``},
 	{`<IMG SRC="javascript:alert('XSS')" <test`, ``},
-	{`&gt test &lt`, `&gt test &lt`},
+	{`&gt test &lt`, `&amp;gt test &amp;lt`},
 }
 
 func TestHTML(t *testing.T) {
