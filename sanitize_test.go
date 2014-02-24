@@ -19,7 +19,7 @@ var urls = []Test{
 	{"/../../4-icon.jpg", "/4-icon.jpg"},
 	{"/Images/../4-icon.jpg", "/images/4-icon.jpg"},
 	{"../4 icon.*", "/4-icon."},
-	{"Spac ey/Name/test før url", "spac-ey/name/test-for-url"},
+	{"Spac ey/Name/test før url", "spac-ey/name/test-foer-url"},
 	{"../*", "/"},
 }
 
