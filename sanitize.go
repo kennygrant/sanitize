@@ -210,5 +210,4 @@ var transliterations = map[rune]string{
 	'ż': "z",
 	'Œ': "OE",
 	'œ': "oe",
-	'&': "and",
 }
