@@ -64,6 +64,7 @@ var html = []Test{
 	{"<p</p>?> or <p id=0</p> or <<</>><ASDF><@$!@£M<<>>>>>>>>>>>>>><>***************aaaaaaaaaaaaaaaaaaaaaaaaaa>", " or ***************aaaaaaaaaaaaaaaaaaaaaaaaaa"},
 	{"<p>Some text</p>", "Some text\n"},
 	{"Something</br>Some more", "Something\nSome more"},
+	{"Something<br/>Some more", "Something\nSome more"},
 	{`<a href="http://www.example.com"?>This is a 'test' of <b>bold</b> &amp; <i>italic</i></a> </br> invalid markup.<//data>><alert><script CDATA[:Asdfjk2354115nkjafdgs]>. <div src=">">><><img src="">`, "This is a 'test' of bold & italic \n invalid markup.. \""},
 	{"<![CDATA[<sender>John Smith</sender>]]>", "John Smith]]"},
 	{"<!-- <script src='blah.js' data-rel='fsd'> --> This is text", " -- This is text"},
