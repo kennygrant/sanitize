@@ -48,7 +48,7 @@ func HTML(s string) (output string) {
 		output = b.String()
 	}
 
-	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ". 
+	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ".
 	output = template.HTMLEscapeString(output)
 
 	// Remove a few common harmless entities, to arrive at something more like plain text
@@ -138,7 +138,7 @@ func Accents(text string) string {
 }
 
 // A very limited list of transliterations to catch common european names translated to urls.
-// This set could be expanded with at least caps and many more characters. 
+// This set could be expanded with at least caps and many more characters.
 var transliterations = map[rune]string{
 	'À': "A",
 	'Á': "A",
@@ -211,4 +211,5 @@ var transliterations = map[rune]string{
 	'ż': "z",
 	'Œ': "OE",
 	'œ': "oe",
+	'’': "'",
 }
