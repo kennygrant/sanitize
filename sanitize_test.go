@@ -75,6 +75,7 @@ var html = []Test{
 	{`<IMG SRC=JaVaScRiPt:alert('XSS')&gt;`, ``},
 	{`<IMG SRC="javascript:alert('XSS')" <test`, ``},
 	{`&gt test &lt`, `&amp;gt test &amp;lt`},
+	{`&#8220;hello&#8221; it&#8217;s for &#8216;real&#8217;`, `"hello" it's for 'real'`},
 }
 
 func TestHTML(t *testing.T) {

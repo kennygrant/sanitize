@@ -48,6 +48,12 @@ func HTML(s string) (output string) {
 		output = b.String()
 	}
 
+	// fix for "smart" quotes
+	output = strings.Replace(output, "&#8216;", "'", -1)
+	output = strings.Replace(output, "&#8217;", "'", -1)
+	output = strings.Replace(output, "&#8220;", "\"", -1)
+	output = strings.Replace(output, "&#8221;", "\"", -1)
+
 	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ". 
 	output = template.HTMLEscapeString(output)
 
