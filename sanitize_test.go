@@ -62,7 +62,7 @@ var htmlTests = []Test{
 	{"<b><p>Bold </b> Not bold</p>\nAlso not bold.", "Bold  Not bold\nAlso not bold."},
 	{`FOO&#x000D;ZOO`, "FOO\rZOO"},
 	{`<script><!--<script </s`, ``},
-    {`<a href="/" alt="Fab.com | Aqua Paper Map 22"" title="Fab.com | Aqua Paper Map 22" - fab.com">test</a>`, `test`},
+	{`<a href="/" alt="Fab.com | Aqua Paper Map 22"" title="Fab.com | Aqua Paper Map 22" - fab.com">test</a>`, `test`},
 	{`<p</p>?> or <p id=0</p> or <<</>><ASDF><@$!@£M<<>>>>>>>>>>>>>><>***************aaaaaaaaaaaaaaaaaaaaaaaaaa>`, ` or ***************aaaaaaaaaaaaaaaaaaaaaaaaaa`},
 	{`<p>Some text</p><frameset src="testing.html"></frameset>`, "Some text\n"},
 	{`Something<br/>Some more`, "Something\nSome more"},
@@ -78,9 +78,9 @@ var htmlTests = []Test{
 	{`&gt & test &lt`, `&gt; & test &lt;`},
 	{`<img></IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
 	{`&#8220;hello&#8221; it&#8217;s for &#8216;real&#8217;`, `"hello" it's for 'real'`},
-    {`<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&
-#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>`,``},
-    {`'';!--"<XSS>=&{()}`,`'';!--"=&amp;{()}`},
+	{`<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&
+#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>`, ``},
+	{`'';!--"<XSS>=&{()}`, `'';!--"=&amp;{()}`},
 }
 
 func TestHTML(t *testing.T) {
@@ -93,8 +93,8 @@ func TestHTML(t *testing.T) {
 }
 
 var htmlTestsAllowing = []Test{
-    {`<IMG SRC="jav&#x0D;ascript:alert('XSS');">`,`<img>`},
-    {`<i>hello world</i href="javascript:alert('hello world')">`, `<i>hello world</i>`},
+	{`<IMG SRC="jav&#x0D;ascript:alert('XSS');">`, `<img>`},
+	{`<i>hello world</i href="javascript:alert('hello world')">`, `<i>hello world</i>`},
 	{`hello<br ><br / ><hr /><hr    >rulers`, `hello<br><br><hr/><hr>rulers`},
 	{`<span class="testing" id="testid" name="testname" style="font-color:red;text-size:gigantic;"><p>Span</p></span>`, `<span class="testing" id="testid" name="testname"><p>Span</p></span>`},
 	{`<div class="divclass">Div</div><h4><h3>test</h4>invalid</h3><p>test</p>`, `<div class="divclass">Div</div><h4><h3>test</h4>invalid</h3><p>test</p>`},
@@ -106,7 +106,7 @@ var htmlTestsAllowing = []Test{
 	{"<b><p>Bold </b> Not bold</p>\nAlso not bold.", "<b><p>Bold </b> Not bold</p>\nAlso not bold."},
 	{"`FOO&#x000D;ZOO", "`FOO&#13;ZOO"},
 	{`<script><!--<script </s`, ``},
-    {`<a href="/" alt="Fab.com | Aqua Paper Map 22"" title="Fab.com | Aqua Paper Map 22" - fab.com">test</a>`, `<a href="/" alt="Fab.com | Aqua Paper Map 22" title="Fab.com | Aqua Paper Map 22">test</a>`},
+	{`<a href="/" alt="Fab.com | Aqua Paper Map 22"" title="Fab.com | Aqua Paper Map 22" - fab.com">test</a>`, `<a href="/" alt="Fab.com | Aqua Paper Map 22" title="Fab.com | Aqua Paper Map 22">test</a>`},
 	{"<p</p>?> or <p id=0</p> or <<</>><ASDF><@$!@£M<<>>>>>>>>>>>>>><>***************aaaaaaaaaaaaaaaaaaaaaaaaaa>", "?&gt; or <p id=\"0&lt;/p\"> or &lt;&lt;&gt;&lt;@$!@£M&lt;&lt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&lt;&gt;***************aaaaaaaaaaaaaaaaaaaaaaaaaa&gt;"},
 	{`<p>Some text</p><exotic><iframe><frameset src="testing.html"></frameset>`, `<p>Some text</p>`},
 	{"Something<br/>Some more", `Something<br/>Some more`},
@@ -123,25 +123,25 @@ var htmlTestsAllowing = []Test{
 	{`<img></IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, `<img></img>`},
 	{`<img src="data:text/javascript;alert('alert');">`, `<img>`},
 	{`<iframe src=http://... <`, ``},
-     {`<iframe src="data:CSS"><img><a><</a>;sdf<iframe>`, ``},
+	{`<iframe src="data:CSS"><img><a><</a>;sdf<iframe>`, ``},
 	{`<img src=javascript:alert(document.cookie)>`, `<img>`},
 	{`<?php echo('hello world')>`, ``},
-    {`Hello <STYLE>.XSS{background-image:url("javascript:alert('XSS')");}</STYLE><A CLASS=XSS></A>World`,`Hello <a class="XSS"></a>World`},
-    {`<a href="javascript:alert('XSS1')" onmouseover="alert('XSS2')">XSS<a>`,`<a>XSS<a>`},
-    {`<a href="http://www.google.com/"><img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/></a>`,
-     `<a href="http://www.google.com/"><img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/></a>`},
-    {`<a href="javascript:alert(&#39;XSS1&#39;)" "document.write('<HTML> Tags and markup');">XSS<a>`,`<a> Tags and markup&#39;);&#34;&gt;XSS<a>`},
-    {`<a <script>document.write("UNTRUSTED INPUT: " + document.location.hash);<script/> >`,`<a>document.write(&#34;UNTRUSTED INPUT: &#34; + document.location.hash); &gt;`},
-    {`<IMG SRC=&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29>`,`<img>`},
-    {`<IMG SRC="jav	ascript:alert('XSS');">`,`<img>`},
-    {`<IMG SRC="jav&#x09;ascript:alert('XSS');">`,`<img>`},
-    {`<HEAD><META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=UTF-7"> </HEAD>+ADw-SCRIPT+AD4-alert('XSS');+ADw-/SCRIPT+AD4-`,` +ADw-SCRIPT+AD4-alert(&#39;XSS&#39;);+ADw-/SCRIPT+AD4-`},
-    {`<SCRIPT>document.write("<SCRI");</SCRIPT>PT SRC="http://ha.ckers.org/xss.js"></SCRIPT>`,`PT SRC=&#34;http://ha.ckers.org/xss.js&#34;&gt;`},
-    {`'';!--"<XSS>=&{()}`,`&#39;&#39;;!--&#34;=&amp;{()}`},
-    {`<IMG SRC=javascript:alert('XSS')`,``},
-    {`<IMG """><SCRIPT>alert("XSS")</SCRIPT>">`,`<img>&#34;&gt;`},
-    {`<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&
-#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>`,`<img>`},
+	{`Hello <STYLE>.XSS{background-image:url("javascript:alert('XSS')");}</STYLE><A CLASS=XSS></A>World`, `Hello <a class="XSS"></a>World`},
+	{`<a href="javascript:alert('XSS1')" onmouseover="alert('XSS2')">XSS<a>`, `<a>XSS<a>`},
+	{`<a href="http://www.google.com/"><img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/></a>`,
+		`<a href="http://www.google.com/"><img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/></a>`},
+	{`<a href="javascript:alert(&#39;XSS1&#39;)" "document.write('<HTML> Tags and markup');">XSS<a>`, `<a> Tags and markup&#39;);&#34;&gt;XSS<a>`},
+	{`<a <script>document.write("UNTRUSTED INPUT: " + document.location.hash);<script/> >`, `<a>document.write(&#34;UNTRUSTED INPUT: &#34; + document.location.hash); &gt;`},
+	{`<IMG SRC=&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29>`, `<img>`},
+	{`<IMG SRC="jav	ascript:alert('XSS');">`, `<img>`},
+	{`<IMG SRC="jav&#x09;ascript:alert('XSS');">`, `<img>`},
+	{`<HEAD><META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=UTF-7"> </HEAD>+ADw-SCRIPT+AD4-alert('XSS');+ADw-/SCRIPT+AD4-`, ` +ADw-SCRIPT+AD4-alert(&#39;XSS&#39;);+ADw-/SCRIPT+AD4-`},
+	{`<SCRIPT>document.write("<SCRI");</SCRIPT>PT SRC="http://ha.ckers.org/xss.js"></SCRIPT>`, `PT SRC=&#34;http://ha.ckers.org/xss.js&#34;&gt;`},
+	{`'';!--"<XSS>=&{()}`, `&#39;&#39;;!--&#34;=&amp;{()}`},
+	{`<IMG SRC=javascript:alert('XSS')`, ``},
+	{`<IMG """><SCRIPT>alert("XSS")</SCRIPT>">`, `<img>&#34;&gt;`},
+	{`<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&
+#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>`, `<img>`},
 }
 
 func TestHTMLAllowed(t *testing.T) {
