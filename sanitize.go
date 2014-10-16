@@ -3,98 +3,94 @@ package sanitize
 
 import (
 	"bytes"
-    "html"
+	"html"
 	"html/template"
+	"io"
 	"path"
-    "io"
 	"regexp"
 	"strings"
-    
-    parser "code.google.com/p/go.net/html"
+
+	parser "code.google.com/p/go.net/html"
 )
 
-
-// Sanitize utf8 html, allowing some tags 
+// Sanitize utf8 html, allowing some tags
 // Usage: sanitize.HTMLAllowing("<b id=id>my html</b>",[]string{"b"},[]string{"id")
-func HTMLAllowing(s string, args...[]string) (string, error) {
-    var IGNORE_TAGS  = []string{"title","script","style","iframe","frame","frameset","noframes","noembed","embed","applet","object"}
-    var DEFAULT_TAGS = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "ol", "ul", "li"}
-    var DEFAULT_ATTR = []string{"id", "class", "src", "src", "title", "alt", "name", "rel"}
-   
-    allowedTags := DEFAULT_TAGS
-    if len(args) > 0 {
-        allowedTags = args[0]
-    }
-    allowedAttributes := DEFAULT_ATTR
-    if len(args) > 1 {
-        allowedAttributes = args[1]
-    }
-    
-   
-    // Parse the html
-    tokenizer   := parser.NewTokenizer(strings.NewReader(s))
-    
-    buffer      := bytes.NewBufferString("")
-    ignore      := ""
-  
-    for {
-    	tokenType       := tokenizer.Next()
-        token           := tokenizer.Token()
-        
-        switch tokenType {
-            
-            case parser.ErrorToken:
-    			err := tokenizer.Err()
-    			if err == io.EOF {
-                    return buffer.String(),nil
-    			} else {
-    				return "", err
-    			}
-            case parser.StartTagToken:   
-             
-                if len(ignore) == 0 && includes(allowedTags,token.Data) {
-                    token.Attr = cleanAttributes(token.Attr,allowedAttributes)
-                    buffer.WriteString(token.String())
-                } else if includes(IGNORE_TAGS,token.Data) { 
-                    ignore = token.Data
-                } 
-                
-            case parser.SelfClosingTagToken:  
-                
-                 if len(ignore) == 0 && includes(allowedTags,token.Data) {
-                   token.Attr = cleanAttributes(token.Attr,allowedAttributes)
-                   buffer.WriteString(token.String())
-                 } else if token.Data == ignore {
-                     ignore = ""
-                 }
-                
-            case parser.EndTagToken:   
-                if len(ignore) == 0 && includes(allowedTags,token.Data) {
-                    token.Attr = []parser.Attribute{}
-                    buffer.WriteString(token.String())
-                } else if token.Data == ignore {
-                     ignore = ""
-                 }
-                
-            case parser.TextToken:   
-                // We allow text content through, unless ignoring this entire tag and its contents (including other tags)
-                if ignore == "" {
-                    buffer.WriteString(token.String())
-                }
-            case parser.CommentToken:
-                // We ignore comments by default
-            case parser.DoctypeToken:   
-                // We ignore doctypes by default - html5 does not require them and this is intended for sanitizing snippets of text
-            default:
-               // We ignore unknown token types by default
-            
-        }
-        
-    }
-    
+func HTMLAllowing(s string, args ...[]string) (string, error) {
+	var IGNORE_TAGS = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object"}
+	var DEFAULT_TAGS = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "ol", "ul", "li"}
+	var DEFAULT_ATTR = []string{"id", "class", "src", "src", "title", "alt", "name", "rel"}
+
+	allowedTags := DEFAULT_TAGS
+	if len(args) > 0 {
+		allowedTags = args[0]
+	}
+	allowedAttributes := DEFAULT_ATTR
+	if len(args) > 1 {
+		allowedAttributes = args[1]
+	}
+
+	// Parse the html
+	tokenizer := parser.NewTokenizer(strings.NewReader(s))
+
+	buffer := bytes.NewBufferString("")
+	ignore := ""
+
+	for {
+		tokenType := tokenizer.Next()
+		token := tokenizer.Token()
+
+		switch tokenType {
+
+		case parser.ErrorToken:
+			err := tokenizer.Err()
+			if err == io.EOF {
+				return buffer.String(), nil
+			} else {
+				return "", err
+			}
+		case parser.StartTagToken:
+
+			if len(ignore) == 0 && includes(allowedTags, token.Data) {
+				token.Attr = cleanAttributes(token.Attr, allowedAttributes)
+				buffer.WriteString(token.String())
+			} else if includes(IGNORE_TAGS, token.Data) {
+				ignore = token.Data
+			}
+
+		case parser.SelfClosingTagToken:
+
+			if len(ignore) == 0 && includes(allowedTags, token.Data) {
+				token.Attr = cleanAttributes(token.Attr, allowedAttributes)
+				buffer.WriteString(token.String())
+			} else if token.Data == ignore {
+				ignore = ""
+			}
+
+		case parser.EndTagToken:
+			if len(ignore) == 0 && includes(allowedTags, token.Data) {
+				token.Attr = []parser.Attribute{}
+				buffer.WriteString(token.String())
+			} else if token.Data == ignore {
+				ignore = ""
+			}
+
+		case parser.TextToken:
+			// We allow text content through, unless ignoring this entire tag and its contents (including other tags)
+			if ignore == "" {
+				buffer.WriteString(token.String())
+			}
+		case parser.CommentToken:
+			// We ignore comments by default
+		case parser.DoctypeToken:
+			// We ignore doctypes by default - html5 does not require them and this is intended for sanitizing snippets of text
+		default:
+			// We ignore unknown token types by default
+
+		}
+
+	}
+
 }
-
-
 
 // Strip html tags, replace common entities, and escape <>&;'" in the result.
 // Note the returned text may contain entities as it is escaped by HTMLEscapeString, and most entities are not translated.
@@ -134,24 +130,27 @@ func HTML(s string) (output string) {
 		}
 		output = b.String()
 	}
-    
-
-    // Translate some entities into their plain text equivalent (for example accents, if encoded as entities)
-    output = html.UnescapeString(output)
-
-	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ". 
-	output = template.HTMLEscapeString(output)
 
 	// Remove a few common harmless entities, to arrive at something more like plain text
-	// This relies on having removed *all* tags above
+	output = strings.Replace(output, "&#8216;", "'", -1)
+	output = strings.Replace(output, "&#8217;", "'", -1)
+	output = strings.Replace(output, "&#8220;", "\"", -1)
+	output = strings.Replace(output, "&#8221;", "\"", -1)
 	output = strings.Replace(output, "&nbsp;", " ", -1)
 	output = strings.Replace(output, "&quot;", "\"", -1)
 	output = strings.Replace(output, "&apos;", "'", -1)
+
+	// Translate some entities into their plain text equivalent (for example accents, if encoded as entities)
+	output = html.UnescapeString(output)
+
+	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ".
+	output = template.HTMLEscapeString(output)
+
+	// After processing, remove some harmless entities &, ' and " which are encoded by HTMLEscapeString
 	output = strings.Replace(output, "&#34;", "\"", -1)
 	output = strings.Replace(output, "&#39;", "'", -1)
-	// NB spaces here are significant - we only allow & not part of entity
-	output = strings.Replace(output, "&amp; ", "& ", -1)
-	output = strings.Replace(output, "&amp;amp; ", "& ", -1)
+	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space after
+	output = strings.Replace(output, "&amp;amp; ", "& ", -1) // NB space after
 
 	return output
 }
@@ -229,7 +228,7 @@ func Accents(text string) string {
 }
 
 // A very limited list of transliterations to catch common european names translated to urls.
-// This set could be expanded with at least caps and many more characters. 
+// This set could be expanded with at least caps and many more characters.
 var transliterations = map[rune]string{
 	'À': "A",
 	'Á': "A",
@@ -304,33 +303,25 @@ var transliterations = map[rune]string{
 	'œ': "oe",
 }
 
-
-
-
-func includes(a []string,s string) bool {
-    for _, as := range a {
-        if as == s {
-            return true
-        }
-    }
-    return false
+func includes(a []string, s string) bool {
+	for _, as := range a {
+		if as == s {
+			return true
+		}
+	}
+	return false
 }
 
+func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute {
+	if len(a) == 0 {
+		return a
+	}
 
-func cleanAttributes(a []parser.Attribute,allowed []string) []parser.Attribute {
-    if len(a) == 0 {
-        return a
-    }
-    
-    cleaned := make([]parser.Attribute,0)
-    for _, attr := range a {
-        if includes(allowed,attr.Key) {
-           cleaned = append(cleaned,attr)
-        }
-    }
-    return cleaned
+	cleaned := make([]parser.Attribute, 0)
+	for _, attr := range a {
+		if includes(allowed, attr.Key) {
+			cleaned = append(cleaned, attr)
+		}
+	}
+	return cleaned
 }
-
-
-
-

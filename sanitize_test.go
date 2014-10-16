@@ -52,11 +52,11 @@ func TestName(t *testing.T) {
 
 // Test with some malformed or malicious html
 // NB because we remove all tokens after a < until the next >
-// and do not attempt to parse, we should be safe from invalid html, 
+// and do not attempt to parse, we should be safe from invalid html,
 // but will sometimes completely empty the string if we have invalid input
 // Note we sometimes use " in order to keep things on one line and use the ` character
 var htmlTests = []Test{
-    {`&nbsp;`, "\u00a0"},
+	{`&nbsp;`, " "},
 	{`&amp;#x000D;`, `&amp;#x000D;`},
 	{`<invalid attr="invalid"<,<p><p><p><p><p>`, ``},
 	{"<b><p>Bold </b> Not bold</p>\nAlso not bold.", "Bold  Not bold\nAlso not bold."},
@@ -76,7 +76,8 @@ var htmlTests = []Test{
 	{`<IMG SRC=JaVaScRiPt:alert('XSS')&gt;`, ``},
 	{`<IMG SRC="javascript:alert('XSS')" <test`, ``},
 	{`&gt & test &lt`, `&gt; & test &lt;`},
-    {`<img></IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
+	{`<img></IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
+	{`&#8220;hello&#8221; it&#8217;s for &#8216;real&#8217;`, `"hello" it's for 'real'`},
 }
 
 func TestHTML(t *testing.T) {
@@ -88,14 +89,13 @@ func TestHTML(t *testing.T) {
 	}
 }
 
-
 var htmlTestsAllowing = []Test{
-    {`hello<br ><br / ><hr /><hr    >rulers`,`hello<br><br><hr/><hr>rulers`},      
-    {`<span class="testing" id="testid" name="testname" style="font-color:red;text-size:gigantic;"><p>Span</p></span>`, `<span class="testing" id="testid" name="testname"><p>Span</p></span>`},
-    {`<div class="divclass">Div</div><h4><h3>test</h4>invalid</h3><p>test</p>`, `<div class="divclass">Div</div><h4><h3>test</h4>invalid</h3><p>test</p>`},
+	{`hello<br ><br / ><hr /><hr    >rulers`, `hello<br><br><hr/><hr>rulers`},
+	{`<span class="testing" id="testid" name="testname" style="font-color:red;text-size:gigantic;"><p>Span</p></span>`, `<span class="testing" id="testid" name="testname"><p>Span</p></span>`},
+	{`<div class="divclass">Div</div><h4><h3>test</h4>invalid</h3><p>test</p>`, `<div class="divclass">Div</div><h4><h3>test</h4>invalid</h3><p>test</p>`},
 	{`<p>Some text</p><exotic><iframe>test</iframe><frameset src="testing.html"></frameset>`, `<p>Some text</p>`},
-    {`<b>hello world</b>`, `<b>hello world</b>`},
-    {`text<p>inside<p onclick='alert()'/>too`, `text<p>inside<p/>too`},
+	{`<b>hello world</b>`, `<b>hello world</b>`},
+	{`text<p>inside<p onclick='alert()'/>too`, `text<p>inside<p/>too`},
 	{`&amp;#x000D;`, `&amp;#x000D;`},
 	{`<invalid attr="invalid"<,<p><p><p><p><p>`, `<p><p><p><p>`},
 	{"<b><p>Bold </b> Not bold</p>\nAlso not bold.", "<b><p>Bold </b> Not bold</p>\nAlso not bold."},
@@ -115,24 +115,22 @@ var htmlTestsAllowing = []Test{
 	{`<IMG SRC=JaVaScRiPt:alert('XSS')&gt;`, ``},
 	{`<IMG SRC="javascript:alert('XSS')" <test`, ``},
 	{`&gt & test &lt`, `&gt; &amp; test &lt;`},
-    {`<img></IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
-    {`<img src="data:text/javascript;alert('alert');">`, ``},
-    {`<iframe src=http://... <`, ``},
-    {`<img src=javascript:alert(document.cookie)>`, ``},
-    {`<?php echo('hello world')>`, ``},
+	{`<img></IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
+	{`<img src="data:text/javascript;alert('alert');">`, ``},
+	{`<iframe src=http://... <`, ``},
+	{`<img src=javascript:alert(document.cookie)>`, ``},
+	{`<?php echo('hello world')>`, ``},
 }
 
-
-
 func TestHTMLAllowed(t *testing.T) {
-    
+
 	for _, test := range htmlTestsAllowing {
-		output,err := HTMLAllowing(test.input)
-        if err != nil {
-           t.Fatalf(Format, test.input, test.expected, output, err) 
-        }
+		output, err := HTMLAllowing(test.input)
+		if err != nil {
+			t.Fatalf(Format, test.input, test.expected, output, err)
+		}
 		if output != test.expected {
 			t.Fatalf(Format, test.input, test.expected, output)
-		} 
+		}
 	}
 }
