@@ -16,9 +16,9 @@ import (
 // Sanitize utf8 html, allowing some tags
 // Usage: sanitize.HTMLAllowing("<b id=id>my html</b>",[]string{"b"},[]string{"id")
 func HTMLAllowing(s string, args ...[]string) (string, error) {
-	var IGNORE_TAGS = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object"}
-	var DEFAULT_TAGS = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "ol", "ul", "li"}
-	var DEFAULT_ATTR = []string{"id", "class", "src", "src", "title", "alt", "name", "rel"}
+	var IGNORE_TAGS = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object","base"}
+	var DEFAULT_TAGS = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "ol", "ul", "li", "a", "img"}
+	var DEFAULT_ATTR = []string{"id", "class", "src", "href", "title", "alt", "name", "rel"}
 
 	allowedTags := DEFAULT_TAGS
 	if len(args) > 0 {
@@ -320,7 +320,29 @@ func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute 
 	cleaned := make([]parser.Attribute, 0)
 	for _, attr := range a {
 		if includes(allowed, attr.Key) {
-			cleaned = append(cleaned, attr)
+            
+            // If the attribute contains data: or javascript: anywhere, ignore it
+            // we don't allow this in attributes as it is so frequently used for xss
+            // NB we allow spaces in the value, and lowercase
+            re := regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
+            val := strings.ToLower(attr.Val)
+            if re.FindString(val) != "" {
+                attr.Val = ""
+            }
+            
+            
+            // We are far more restrictive with href attributes
+            // The url may start with /, mailto://, http:// or https://
+            if attr.Key == "href" {
+                urlre := regexp.MustCompile(`\A/[^/\\]?|mailto://|http://|https://`)
+                if urlre.FindString(strings.ToLower(attr.Val)) == "" {
+                    attr.Val = ""
+                }
+            }
+            
+            if attr.Val != "" {
+    			cleaned = append(cleaned, attr)
+            }
 		}
 	}
 	return cleaned
