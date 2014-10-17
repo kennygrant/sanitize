@@ -4,7 +4,6 @@ sanitize
 Package sanitize provides functions for sanitizing text in golang strings.
 
 FUNCTIONS
-___
 
 ```go
 sanitize.HTMLAllowing(s string, args...[]string) (string, error)
