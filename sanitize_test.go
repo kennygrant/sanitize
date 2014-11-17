@@ -12,6 +12,26 @@ type Test struct {
 	expected string
 }
 
+type TestWithOption struct {
+	Test
+	options []OptionFunc
+}
+
+var urlsWithOptions = []TestWithOption{
+	{Test{"ReAd ME.md", `read-me.md`}, []OptionFunc{Lower()}},
+	{Test{"ReAd ME.md", `READ-ME.MD`}, []OptionFunc{Upper()}},
+	{Test{"ReAd ME.md", `ReAd-ME.md`}, []OptionFunc{}},
+}
+
+func TestPathWithOptions(t *testing.T) {
+	for _, test := range urlsWithOptions {
+		output := PathWithOptions(test.input, test.options...)
+		if output != test.expected {
+			t.Fatalf(Format, test.input, test.expected, output)
+		}
+	}
+}
+
 var urls = []Test{
 	{"ReAd ME.md", `read-me.md`},
 	{"E88E08A7-279C-4CC1-8B90-86DE0D70443C.html", `e88e08a7-279c-4cc1-8b90-86de0d70443c.html`},
@@ -26,6 +46,21 @@ var urls = []Test{
 func TestPath(t *testing.T) {
 	for _, test := range urls {
 		output := Path(test.input)
+		if output != test.expected {
+			t.Fatalf(Format, test.input, test.expected, output)
+		}
+	}
+}
+
+var fileNamesWithOptions = []TestWithOption{
+	{Test{"ReAd ME.md", `read-me.md`}, []OptionFunc{Lower()}},
+	{Test{"ReAd ME.md", `READ-ME.MD`}, []OptionFunc{Upper()}},
+	{Test{"ReAd ME.md", `ReAd-ME.md`}, []OptionFunc{}},
+}
+
+func TestNameWithOptions(t *testing.T) {
+	for _, test := range fileNamesWithOptions {
+		output := NameWithOptions(test.input, test.options...)
 		if output != test.expected {
 			t.Fatalf(Format, test.input, test.expected, output)
 		}

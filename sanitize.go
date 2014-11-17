@@ -13,6 +13,20 @@ import (
 	parser "golang.org/x/net/html"
 )
 
+type OptionFunc func(string) string
+
+func Lower() OptionFunc {
+	return func(s string) string {
+		return strings.ToLower(s)
+	}
+}
+
+func Upper() OptionFunc {
+	return func(s string) string {
+		return strings.ToUpper(s)
+	}
+}
+
 // HTMLAllowing sanitizes utf8 html, allowing some tags
 // Usage: sanitize.HTMLAllowing("<b id=id>my html</b>",[]string{"b"},[]string{"id"})
 func HTMLAllowing(s string, args ...[]string) (string, error) {
@@ -155,10 +169,14 @@ func HTML(s string) (output string) {
 	return output
 }
 
-// Path makes a string safe to use as an url path, cleaned of .. and unsuitable characters
-func Path(text string) string {
-	// Start with lowercase string
-	fileName := strings.ToLower(text)
+// PathWithOptions makes a string safe to use as an url path, cleaned of .. and unsuitable characters
+func PathWithOptions(text string, options ...OptionFunc) string {
+	var fileName string = text
+
+	for _, option := range options {
+		fileName = option(fileName)
+	}
+
 	fileName = strings.Replace(fileName, "..", "", -1)
 	fileName = path.Clean(fileName)
 	fileName = strings.Trim(fileName, " ")
@@ -186,10 +204,19 @@ func Path(text string) string {
 	return fileName
 }
 
-// Name makes a string safe to use in a file name (e.g. for saving file atttachments)
-func Name(text string) string {
-	// Start with lowercase string
-	fileName := strings.ToLower(text)
+// Path makes a string safe to use as an url path, cleaned of .. and unsuitable characters
+func Path(text string) string {
+	return PathWithOptions(text, Lower())
+}
+
+// NameWithOptions makes a string safe to use in a file name (e.g. for saving file atttachments)
+func NameWithOptions(text string, options ...OptionFunc) string {
+	var fileName string = text
+
+	for _, option := range options {
+		fileName = option(fileName)
+	}
+
 	fileName = path.Clean(path.Base(fileName))
 	fileName = strings.Trim(fileName, " ")
 
@@ -210,6 +237,11 @@ func Name(text string) string {
 
 	// NB this may be of length 0, caller must check
 	return fileName
+}
+
+// Name makes a string safe to use in a file name (e.g. for saving file atttachments)
+func Name(text string) string {
+	return NameWithOptions(text, Lower())
 }
 
 // Accents replace a set of accented characters with ascii equivalents.
