@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	parser "code.google.com/p/go.net/html"
+	parser "golang.org/x/net/html"
 )
 
 // Sanitize utf8 html, allowing some tags
