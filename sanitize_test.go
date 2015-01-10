@@ -50,6 +50,21 @@ func TestName(t *testing.T) {
 	}
 }
 
+var baseFileNames = []Test{
+	{"And/Or", `and-or`},
+	{"sonic.exe", `sonic-exe`},
+	{"012: #fetch for Defaults", `012-fetch-for-defaults`},
+}
+
+func TestBaseName(t *testing.T) {
+	for _, test := range baseFileNames {
+		output := BaseName(test.input)
+		if output != test.expected {
+			t.Fatalf(Format, test.input, test.expected, output)
+		}
+	}
+}
+
 // Test with some malformed or malicious html
 // NB because we remove all tokens after a < until the next >
 // and do not attempt to parse, we should be safe from invalid html,
