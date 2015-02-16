@@ -14,7 +14,7 @@ import (
 )
 
 // Sanitize utf8 html, allowing some tags
-// Usage: sanitize.HTMLAllowing("<b id=id>my html</b>",[]string{"b"},[]string{"id")
+// Usage: sanitize.HTMLAllowing("<b id=id>my html</b>",[]string{"b"},[]string{"id"})
 func HTMLAllowing(s string, args ...[]string) (string, error) {
 	var IGNORE_TAGS = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object", "base"}
 	var DEFAULT_TAGS = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "ol", "ul", "li", "a", "img"}
