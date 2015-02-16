@@ -212,6 +212,31 @@ func Name(text string) string {
 	return fileName
 }
 
+// Makes a string safe to use in a base file name
+func BaseName(text string) string {
+	// Start with lowercase string
+	fileName := strings.ToLower(text)
+	fileName = strings.Trim(fileName, " ")
+
+	// Replace certain joining characters with a dash
+	seps, err := regexp.Compile(`[ ./&_=+:]`)
+	if err == nil {
+		fileName = seps.ReplaceAllString(fileName, "-")
+	}
+
+	// Remove all other unrecognised characters - NB we do allow any printable characters
+	legal, err := regexp.Compile(`[^[:alnum:]-]`)
+	if err == nil {
+		fileName = legal.ReplaceAllString(fileName, "")
+	}
+
+	// Remove any double dashes caused by existing - in name
+	fileName = strings.Replace(fileName, "--", "-", -1)
+
+	// NB this may be of length 0, caller must check
+	return fileName
+}
+
 // Replace a set of accented characters with ascii equivalents.
 func Accents(text string) string {
 	// Replace some common accent characters
