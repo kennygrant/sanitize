@@ -13,6 +13,24 @@ import (
 	parser "golang.org/x/net/html"
 )
 
+var (
+	seps = regexp.MustCompile(`[ &_=+:]`)
+
+	// we are very restrictive as this is intended for ascii url slugs
+	pathLegal = regexp.MustCompile(`[^\w\_\~\-\./]`)
+
+	// Remove all other unrecognised characters - NB we do allow any printable characters
+	nameLegal = regexp.MustCompile(`[^[:alnum:]-.]`)
+
+	// If the attribute contains data: or javascript: anywhere, ignore it
+	// we don't allow this in attributes as it is so frequently used for xss
+	// NB we allow spaces in the value, and lowercase
+	re = regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
+
+	// We are far more restrictive with href attributes
+	urlre = regexp.MustCompile(`\A/[^/\\]?|mailto://|http://|https://`)
+)
+
 // HTMLAllowing sanitizes utf8 html, allowing some tags
 // Usage: sanitize.HTMLAllowing("<b id=id>my html</b>",[]string{"b"},[]string{"id"})
 func HTMLAllowing(s string, args ...[]string) (string, error) {
@@ -45,9 +63,9 @@ func HTMLAllowing(s string, args ...[]string) (string, error) {
 			err := tokenizer.Err()
 			if err == io.EOF {
 				return buffer.String(), nil
-			} else {
-				return "", err
 			}
+			return "", err
+
 		case parser.StartTagToken:
 
 			if len(ignore) == 0 && includes(allowedTags, token.Data) {
@@ -164,20 +182,13 @@ func Path(text string) string {
 	fileName = strings.Trim(fileName, " ")
 
 	// Replace certain joining characters with a dash
-	seps, err := regexp.Compile(`[ &_=+:]`)
-	if err == nil {
-		fileName = seps.ReplaceAllString(fileName, "-")
-	}
+	fileName = seps.ReplaceAllString(fileName, "-")
 
 	// Flatten accents first
 	fileName = Accents(fileName)
 
 	// Remove all other unrecognised characters
-	// we are very restrictive as this is intended for ascii url slugs
-	legal, err := regexp.Compile(`[^\w\_\~\-\./]`)
-	if err == nil {
-		fileName = legal.ReplaceAllString(fileName, "")
-	}
+	fileName = pathLegal.ReplaceAllString(fileName, "")
 
 	// Remove any double dashes caused by existing - in name
 	fileName = strings.Replace(fileName, "--", "-", -1)
@@ -194,16 +205,10 @@ func Name(text string) string {
 	fileName = strings.Trim(fileName, " ")
 
 	// Replace certain joining characters with a dash
-	seps, err := regexp.Compile(`[ &_=+:]`)
-	if err == nil {
-		fileName = seps.ReplaceAllString(fileName, "-")
-	}
+	fileName = seps.ReplaceAllString(fileName, "-")
 
 	// Remove all other unrecognised characters - NB we do allow any printable characters
-	legal, err := regexp.Compile(`[^[:alnum:]-.]`)
-	if err == nil {
-		fileName = legal.ReplaceAllString(fileName, "")
-	}
+	fileName = nameLegal.ReplaceAllString(fileName, "")
 
 	// Remove any double dashes caused by existing - in name
 	fileName = strings.Replace(fileName, "--", "-", -1)
@@ -321,16 +326,11 @@ func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute 
 	for _, attr := range a {
 		if includes(allowed, attr.Key) {
 
-			// If the attribute contains data: or javascript: anywhere, ignore it
-			// we don't allow this in attributes as it is so frequently used for xss
-			// NB we allow spaces in the value, and lowercase
-			re := regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
 			val := strings.ToLower(attr.Val)
 			if re.FindString(val) != "" {
 				attr.Val = ""
 			}
 
-			// We are far more restrictive with href attributes
 			// The url may start with /, mailto://, http:// or https://
 			if attr.Key == "href" {
 				urlre := regexp.MustCompile(`\A/[^/\\]?|mailto://|http://|https://`)
