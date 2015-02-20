@@ -13,7 +13,7 @@ import (
 	parser "golang.org/x/net/html"
 )
 
-// Sanitize utf8 html, allowing some tags
+// HTMLAllowing sanitizes utf8 html, allowing some tags
 // Usage: sanitize.HTMLAllowing("<b id=id>my html</b>",[]string{"b"},[]string{"id"})
 func HTMLAllowing(s string, args ...[]string) (string, error) {
 	var IGNORE_TAGS = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object", "base"}
@@ -92,7 +92,7 @@ func HTMLAllowing(s string, args ...[]string) (string, error) {
 
 }
 
-// Strip html tags, replace common entities, and escape <>&;'" in the result.
+// HTML strips html tags, replace common entities, and escape <>&;'" in the result.
 // Note the returned text may contain entities as it is escaped by HTMLEscapeString, and most entities are not translated.
 func HTML(s string) (output string) {
 
@@ -155,7 +155,7 @@ func HTML(s string) (output string) {
 	return output
 }
 
-// Makes a string safe to use as an url path, cleaned of .. and unsuitable characters
+// Path makes a string safe to use as an url path, cleaned of .. and unsuitable characters
 func Path(text string) string {
 	// Start with lowercase string
 	fileName := strings.ToLower(text)
@@ -186,7 +186,7 @@ func Path(text string) string {
 	return fileName
 }
 
-// Makes a string safe to use in a file name (e.g. for saving file atttachments)
+// Name makes a string safe to use in a file name (e.g. for saving file atttachments)
 func Name(text string) string {
 	// Start with lowercase string
 	fileName := strings.ToLower(text)
@@ -212,7 +212,7 @@ func Name(text string) string {
 	return fileName
 }
 
-// Replace a set of accented characters with ascii equivalents.
+// Accents replace a set of accented characters with ascii equivalents.
 func Accents(text string) string {
 	// Replace some common accent characters
 	b := bytes.NewBufferString("")
