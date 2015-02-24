@@ -51,7 +51,7 @@ var fileNames = []Test{
 	{"/../../4-icon.jpg", `4-icon.jpg`},
 	{"/Images/../4-icon.jpg", `4-icon.jpg`},
 	{"../4 icon.jpg", `4-icon.jpg`},
-    {"../4 icon-testé *8%^\"'\".jpg ", `4-icon-teste-8.jpg`},
+	{"../4 icon-testé *8%^\"'\".jpg ", `4-icon-teste-8.jpg`},
 }
 
 func TestName(t *testing.T) {

@@ -164,7 +164,7 @@ func Path(text string) string {
 	filePath := strings.ToLower(text)
 	filePath = strings.Replace(filePath, "..", "", -1)
 	filePath = path.Clean(filePath)
-	
+
 	// Remove illegal characters for paths, flattening accents and replacing some common separators with -
 	filePath = cleanString(filePath, illegalPath)
 
@@ -172,7 +172,7 @@ func Path(text string) string {
 	return filePath
 }
 
-// Remove all other unrecognised characters apart from 
+// Remove all other unrecognised characters apart from
 var illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
 
 // Name makes a string safe to use in a file name.
@@ -180,7 +180,7 @@ func Name(text string) string {
 	// Start with lowercase string
 	fileName := strings.ToLower(text)
 	fileName = path.Clean(path.Base(fileName))
-	
+
 	// Remove illegal characters for names, replacing some common separators with -
 	fileName = cleanString(fileName, illegalName)
 
@@ -327,7 +327,7 @@ var separators = regexp.MustCompile(`[ &_=+:]`)
 // Accents, spaces, and all characters not in A-Za-z0-9 are replaced.
 func cleanString(s string, r *regexp.Regexp) string {
 
-    // Remove any trailing space to avoid ending on -
+	// Remove any trailing space to avoid ending on -
 	s = strings.Trim(s, " ")
 
 	// Flatten accents first so that if we remove non-ascii we still get a legible name
