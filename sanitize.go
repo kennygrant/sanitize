@@ -13,7 +13,7 @@ import (
 	parser "golang.org/x/net/html"
 )
 
-// HTMLAllowing sanitizes html, allowing some tags. 
+// HTMLAllowing sanitizes html, allowing some tags.
 // Arrays of allowed tags and allowed attributes may optionally be passed as the second and third arguments.
 func HTMLAllowing(s string, args ...[]string) (string, error) {
 	var IGNORE_TAGS = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object", "base"}
@@ -156,7 +156,7 @@ func HTML(s string) (output string) {
 }
 
 // We are very restrictive as this is intended for ascii url slugs
-var illegalPath = regexp.MustCompile(`[^\w\_\~\-\./]`)
+var illegalPath = regexp.MustCompile(`[^[:alnum:]\~\-\./]`)
 
 // Path makes a string safe to use as an url path.
 func Path(text string) string {
@@ -164,19 +164,15 @@ func Path(text string) string {
 	filePath := strings.ToLower(text)
 	filePath = strings.Replace(filePath, "..", "", -1)
 	filePath = path.Clean(filePath)
-	filePath = strings.Trim(filePath, " ")
-
-	// Flatten accents first
-	filePath = Accents(filePath)
-
-	// Remove illegal characters for paths, replacing some common separators with -
+	
+	// Remove illegal characters for paths, flattening accents and replacing some common separators with -
 	filePath = cleanString(filePath, illegalPath)
 
 	// NB this may be of length 0, caller must check
 	return filePath
 }
 
-// Remove all other unrecognised characters - NB we do allow any printable characters
+// Remove all other unrecognised characters apart from 
 var illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
 
 // Name makes a string safe to use in a file name.
@@ -184,8 +180,7 @@ func Name(text string) string {
 	// Start with lowercase string
 	fileName := strings.ToLower(text)
 	fileName = path.Clean(path.Base(fileName))
-	fileName = strings.Trim(fileName, " ")
-
+	
 	// Remove illegal characters for names, replacing some common separators with -
 	fileName = cleanString(fileName, illegalName)
 
@@ -284,16 +279,15 @@ func Accents(text string) string {
 	return b.String()
 }
 
-
 // If the attribute contains data: or javascript: anywhere, ignore it
 // we don't allow this in attributes as it is so frequently used for xss
-// NB we allow spaces in the value, and lowercase
+// NB we allow spaces in the value, and lowercase.
 var illegalAttr = regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
 
-// We are far more restrictive with href attributes
+// We are far more restrictive with href attributes.
 var legalHrefAttr = regexp.MustCompile(`\A/[^/\\]?|mailto://|http://|https://`)
 
-// cleanAttributes returns an array of attributes after removing malicious ones
+// cleanAttributes returns an array of attributes after removing malicious ones.
 func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute {
 	if len(a) == 0 {
 		return a
@@ -326,11 +320,18 @@ func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute 
 	return cleaned
 }
 
-// A list of characters we consider separators in normal strings and replace with our canonical separator - rather than removing
+// A list of characters we consider separators in normal strings and replace with our canonical separator - rather than removing.
 var separators = regexp.MustCompile(`[ &_=+:]`)
 
-// cleanString replaces separators with - and removes characters listed in the regexp provided from string
+// cleanString replaces separators with - and removes characters listed in the regexp provided from string.
+// Accents, spaces, and all characters not in A-Za-z0-9 are replaced.
 func cleanString(s string, r *regexp.Regexp) string {
+
+    // Remove any trailing space to avoid ending on -
+	s = strings.Trim(s, " ")
+
+	// Flatten accents first so that if we remove non-ascii we still get a legible name
+	s = Accents(s)
 
 	// Replace certain joining characters with a dash
 	s = separators.ReplaceAllString(s, "-")
@@ -344,7 +345,7 @@ func cleanString(s string, r *regexp.Regexp) string {
 	return s
 }
 
-// includes checks for inclusion of a string in a []string
+// includes checks for inclusion of a string in a []string.
 func includes(a []string, s string) bool {
 	for _, as := range a {
 		if as == s {
