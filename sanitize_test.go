@@ -32,6 +32,17 @@ func TestPath(t *testing.T) {
 	}
 }
 
+func BenchmarkPath(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, test := range urls {
+			output := Path(test.input)
+			if output != test.expected {
+				b.Fatalf(Format, test.input, test.expected, output)
+			}
+		}
+	}
+}
+
 var fileNames = []Test{
 	{"ReAd ME.md", `read-me.md`},
 	{"/var/etc/jobs/go/go/src/pkg/foo/bar.go", `bar.go`},
@@ -46,6 +57,17 @@ func TestName(t *testing.T) {
 		output := Name(test.input)
 		if output != test.expected {
 			t.Fatalf(Format, test.input, test.expected, output)
+		}
+	}
+}
+
+func BenchmarkName(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, test := range fileNames {
+			output := Name(test.input)
+			if output != test.expected {
+				b.Fatalf(Format, test.input, test.expected, output)
+			}
 		}
 	}
 }
@@ -153,6 +175,20 @@ func TestHTMLAllowed(t *testing.T) {
 		}
 		if output != test.expected {
 			t.Fatalf(Format, test.input, test.expected, output)
+		}
+	}
+}
+
+func BenchmarkHTMLAllowed(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, test := range htmlTestsAllowing {
+			output, err := HTMLAllowing(test.input)
+			if err != nil {
+				b.Fatalf(Format, test.input, test.expected, output, err)
+			}
+			if output != test.expected {
+				b.Fatalf(Format, test.input, test.expected, output)
+			}
 		}
 	}
 }
