@@ -75,11 +75,11 @@ func BenchmarkName(b *testing.B) {
 }
 
 var baseFileNames = []Test{
-	{"The power & the Glory jpg file. The end", `the-power-the-glory-jpg-file-the-end`},
-	{"/../../4-icon.jpg", `-4-icon-jpg`},
-	{"And/Or", `and-or`},
-	{"sonic.exe", `sonic-exe`},
-	{"012: #fetch for Defaults", `012-fetch-for-defaults`},
+	{"The power & the Glory jpg file. The end", `The-power-the-Glory-jpg-file-The-end`},
+	{"/../../4-iCoN.jpg", `-4-iCoN-jpg`},
+	{"And/Or", `And-Or`},
+	{"Sonic.EXE", `Sonic-EXE`},
+	{"012: #Fetch for Defaults", `012-Fetch-for-Defaults`},
 }
 
 func TestBaseName(t *testing.T) {

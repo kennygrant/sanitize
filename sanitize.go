@@ -197,13 +197,11 @@ func Name(s string) string {
 var baseNameSeparators = regexp.MustCompile(`[./]`)
 
 // BaseName makes a string safe to use in a file name, producing a sanitized basename replacing . or / with -.
-// No attempt is made to normalise a path.
+// No attempt is made to normalise a path or normalise case.
 func BaseName(s string) string {
-	// Start with lowercase string
-	baseName := strings.ToLower(s)
 
 	// Replace certain joining characters with a dash
-	baseName = baseNameSeparators.ReplaceAllString(baseName, "-")
+	baseName := baseNameSeparators.ReplaceAllString(s, "-")
 
 	// Remove illegal characters for names, replacing some common separators with -
 	baseName = cleanString(baseName, illegalName)
