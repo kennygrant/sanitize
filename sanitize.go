@@ -175,7 +175,7 @@ func Path(text string) string {
 // Remove all other unrecognised characters apart from
 var illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
 
-// Name makes a string safe to use in a file name.
+// Name makes a string safe to use in a file name by first finding the path basename, then replacing non-ascii characters.
 func Name(text string) string {
 	// Start with lowercase string
 	fileName := strings.ToLower(text)
@@ -186,6 +186,25 @@ func Name(text string) string {
 
 	// NB this may be of length 0, caller must check
 	return fileName
+}
+
+// Replace these separators with -
+var baseNameSeparators = regexp.MustCompile(`[./]`)
+
+// BaseName makes a string safe to use in a file name, producing a sanitized basename replacing . or / with -.
+// No attempt is made to normalise a path.
+func BaseName(text string) string {
+	// Start with lowercase string
+	baseName := strings.ToLower(text)
+
+	// Replace certain joining characters with a dash
+	baseName = baseNameSeparators.ReplaceAllString(baseName, "-")
+
+	// Remove illegal characters for names, replacing some common separators with -
+	baseName = cleanString(baseName, illegalName)
+
+	// NB this may be of length 0, caller must check
+	return baseName
 }
 
 // A very limited list of transliterations to catch common european names translated to urls.
@@ -322,6 +341,7 @@ func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute 
 
 // A list of characters we consider separators in normal strings and replace with our canonical separator - rather than removing.
 var separators = regexp.MustCompile(`[ &_=+:]`)
+var dashes = regexp.MustCompile(`[\-]+`)
 
 // cleanString replaces separators with - and removes characters listed in the regexp provided from string.
 // Accents, spaces, and all characters not in A-Za-z0-9 are replaced.
@@ -339,8 +359,8 @@ func cleanString(s string, r *regexp.Regexp) string {
 	// Remove all other unrecognised characters - NB we do allow any printable characters
 	s = r.ReplaceAllString(s, "")
 
-	// Remove any double dashes caused by existing - in name
-	s = strings.Replace(s, "--", "-", -1)
+	// Remove any multiple dashes caused by replacements above
+	s = dashes.ReplaceAllString(s, "-")
 
 	return s
 }
