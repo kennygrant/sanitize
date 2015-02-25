@@ -13,18 +13,23 @@ import (
 	parser "golang.org/x/net/html"
 )
 
+var (
+	ignoreTags = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object", "base"}
+
+	defaultTags = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "ol", "ul", "li", "a", "img"}
+
+	defaultAttributes = []string{"id", "class", "src", "href", "title", "alt", "name", "rel"}
+)
+
 // HTMLAllowing sanitizes html, allowing some tags.
 // Arrays of allowed tags and allowed attributes may optionally be passed as the second and third arguments.
 func HTMLAllowing(s string, args ...[]string) (string, error) {
-	var IGNORE_TAGS = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object", "base"}
-	var DEFAULT_TAGS = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "ol", "ul", "li", "a", "img"}
-	var DEFAULT_ATTR = []string{"id", "class", "src", "href", "title", "alt", "name", "rel"}
 
-	allowedTags := DEFAULT_TAGS
+	allowedTags := defaultTags
 	if len(args) > 0 {
 		allowedTags = args[0]
 	}
-	allowedAttributes := DEFAULT_ATTR
+	allowedAttributes := defaultAttributes
 	if len(args) > 1 {
 		allowedAttributes = args[1]
 	}
@@ -53,7 +58,7 @@ func HTMLAllowing(s string, args ...[]string) (string, error) {
 			if len(ignore) == 0 && includes(allowedTags, token.Data) {
 				token.Attr = cleanAttributes(token.Attr, allowedAttributes)
 				buffer.WriteString(token.String())
-			} else if includes(IGNORE_TAGS, token.Data) {
+			} else if includes(ignoreTags, token.Data) {
 				ignore = token.Data
 			}
 
@@ -94,9 +99,9 @@ func HTMLAllowing(s string, args ...[]string) (string, error) {
 
 // HTML strips html tags, replace common entities, and escapes <>&;'" in the result.
 // Note the returned text may contain entities as it is escaped by HTMLEscapeString, and most entities are not translated.
-func HTML(s string) (output string) {
+func HTML(s string) string {
 
-	output = ""
+	output := ""
 
 	// Shortcut strings with no tags in them
 	if !strings.ContainsAny(s, "<>") {
@@ -159,9 +164,9 @@ func HTML(s string) (output string) {
 var illegalPath = regexp.MustCompile(`[^[:alnum:]\~\-\./]`)
 
 // Path makes a string safe to use as an url path.
-func Path(text string) string {
+func Path(s string) string {
 	// Start with lowercase string
-	filePath := strings.ToLower(text)
+	filePath := strings.ToLower(s)
 	filePath = strings.Replace(filePath, "..", "", -1)
 	filePath = path.Clean(filePath)
 
@@ -176,9 +181,9 @@ func Path(text string) string {
 var illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
 
 // Name makes a string safe to use in a file name by first finding the path basename, then replacing non-ascii characters.
-func Name(text string) string {
+func Name(s string) string {
 	// Start with lowercase string
-	fileName := strings.ToLower(text)
+	fileName := strings.ToLower(s)
 	fileName = path.Clean(path.Base(fileName))
 
 	// Remove illegal characters for names, replacing some common separators with -
@@ -193,9 +198,9 @@ var baseNameSeparators = regexp.MustCompile(`[./]`)
 
 // BaseName makes a string safe to use in a file name, producing a sanitized basename replacing . or / with -.
 // No attempt is made to normalise a path.
-func BaseName(text string) string {
+func BaseName(s string) string {
 	// Start with lowercase string
-	baseName := strings.ToLower(text)
+	baseName := strings.ToLower(s)
 
 	// Replace certain joining characters with a dash
 	baseName = baseNameSeparators.ReplaceAllString(baseName, "-")
@@ -284,10 +289,10 @@ var transliterations = map[rune]string{
 }
 
 // Accents replaces a set of accented characters with ascii equivalents.
-func Accents(text string) string {
+func Accents(s string) string {
 	// Replace some common accent characters
 	b := bytes.NewBufferString("")
-	for _, c := range text {
+	for _, c := range s {
 		// Check transliterations first
 		if val, ok := transliterations[c]; ok {
 			b.WriteString(val)
@@ -298,13 +303,15 @@ func Accents(text string) string {
 	return b.String()
 }
 
-// If the attribute contains data: or javascript: anywhere, ignore it
-// we don't allow this in attributes as it is so frequently used for xss
-// NB we allow spaces in the value, and lowercase.
-var illegalAttr = regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
+var (
+	// If the attribute contains data: or javascript: anywhere, ignore it
+	// we don't allow this in attributes as it is so frequently used for xss
+	// NB we allow spaces in the value, and lowercase.
+	illegalAttr = regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
 
-// We are far more restrictive with href attributes.
-var legalHrefAttr = regexp.MustCompile(`\A/[^/\\]?|mailto://|http://|https://`)
+	// We are far more restrictive with href attributes.
+	legalHrefAttr = regexp.MustCompile(`\A/[^/\\]?|mailto://|http://|https://`)
+)
 
 // cleanAttributes returns an array of attributes after removing malicious ones.
 func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute {
@@ -312,7 +319,7 @@ func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute 
 		return a
 	}
 
-	cleaned := make([]parser.Attribute, 0)
+	var cleaned []parser.Attribute
 	for _, attr := range a {
 		if includes(allowed, attr.Key) {
 
@@ -340,8 +347,11 @@ func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute 
 }
 
 // A list of characters we consider separators in normal strings and replace with our canonical separator - rather than removing.
-var separators = regexp.MustCompile(`[ &_=+:]`)
-var dashes = regexp.MustCompile(`[\-]+`)
+var (
+	separators = regexp.MustCompile(`[ &_=+:]`)
+
+	dashes = regexp.MustCompile(`[\-]+`)
+)
 
 // cleanString replaces separators with - and removes characters listed in the regexp provided from string.
 // Accents, spaces, and all characters not in A-Za-z0-9 are replaced.

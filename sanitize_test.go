@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var Format string = "\ninput:    %q\nexpected: %q\noutput:   %q"
+var Format = "\ninput:    %q\nexpected: %q\noutput:   %q"
 
 type Test struct {
 	input    string
