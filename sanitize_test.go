@@ -173,6 +173,7 @@ var htmlTestsAllowing = []Test{
 		`<a href="http://www.google.com/"><img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/></a>`},
 	{`<a href="javascript:alert(&#39;XSS1&#39;)" "document.write('<HTML> Tags and markup');">XSS<a>`, `<a> Tags and markup&#39;);&#34;&gt;XSS<a>`},
 	{`<a <script>document.write("UNTRUSTED INPUT: " + document.location.hash);<script/> >`, `<a>document.write(&#34;UNTRUSTED INPUT: &#34; + document.location.hash); &gt;`},
+	{`<a href="#anchor">foo</a>`, `<a href="#anchor">foo</a>`},
 	{`<IMG SRC=&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29>`, `<img>`},
 	{`<IMG SRC="jav	ascript:alert('XSS');">`, `<img>`},
 	{`<IMG SRC="jav&#x09;ascript:alert('XSS');">`, `<img>`},
