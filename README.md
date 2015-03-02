@@ -1,7 +1,7 @@
 sanitize
 ========
 
-Package sanitize provides functions for sanitizing text in golang strings.
+Package sanitize provides functions to sanitize html and paths with go (golang).
 
 FUNCTIONS
 
