@@ -22,13 +22,13 @@ BaseName makes a string safe to use in a file name, producing a sanitized basena
 sanitize.HTML(s string) string
 ```
 
-Strip html tags with a very simple parser, replace common entities, and escape < and > in the result. The result is intended to be used as plain text. 
+HTML strips html tags with a very simple parser, replace common entities, and escape < and > in the result. The result is intended to be used as plain text. 
 
 ```go
 sanitize.HTMLAllowing(s string, args...[]string) (string, error)
 ```
 
-Parse html and allow certain tags and attributes from the lists optionally specified by args - args[0] is a list of allowed tags, args[1] is a list of allowed attributes. If either is missing default sets are used. 
+HTMLAllowing parses html and allow certain tags and attributes from the lists optionally specified by args - args[0] is a list of allowed tags, args[1] is a list of allowed attributes. If either is missing default sets are used. 
 
 ```go
 sanitize.Name(s string) string
