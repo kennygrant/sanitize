@@ -19,7 +19,21 @@ var (
 	defaultTags = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "strong", "em", "ol", "ul", "li", "a", "img", "pre", "code", "blockquote"}
 
 	defaultAttributes = []string{"id", "class", "src", "href", "title", "alt", "name", "rel"}
+
+	harmlessEntities map[string]string
 )
+
+func init() {
+	harmlessEntities = map[string]string{
+		"&#8216;": "'",
+		"&#8217;": "'",
+		"&#8220;": "\"",
+		"&#8221;": "\"",
+		"&nbsp;":  " ",
+		"&quot;":  "\"",
+		"&apos;":  "'",
+	}
+}
 
 // HTMLAllowing sanitizes html, allowing some tags.
 // Arrays of allowed tags and allowed attributes may optionally be passed as the second and third arguments.
@@ -136,25 +150,21 @@ func HTML(s string) string {
 		output = b.String()
 	}
 
-	// Remove a few common harmless entities, to arrive at something more like plain text
-	output = strings.Replace(output, "&#8216;", "'", -1)
-	output = strings.Replace(output, "&#8217;", "'", -1)
-	output = strings.Replace(output, "&#8220;", "\"", -1)
-	output = strings.Replace(output, "&#8221;", "\"", -1)
-	output = strings.Replace(output, "&nbsp;", " ", -1)
-	output = strings.Replace(output, "&quot;", "\"", -1)
-	output = strings.Replace(output, "&apos;", "'", -1)
+	// Remove a few common harmless entities, to arrive at something more like plain text.
+	for entity, replacement := range harmlessEntities {
+		output = strings.Replace(output, entity, replacement, -1)
+	}
 
-	// Translate some entities into their plain text equivalent (for example accents, if encoded as entities)
+	// Translate some entities into their plain text equivalent (for example accents, if encoded as entities).
 	output = html.UnescapeString(output)
 
 	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ".
 	output = template.HTMLEscapeString(output)
 
-	// After processing, remove some harmless entities &, ' and " which are encoded by HTMLEscapeString
+	// After processing, remove some harmless entities &, ' and " which are encoded by HTMLEscapeString.
 	output = strings.Replace(output, "&#34;", "\"", -1)
 	output = strings.Replace(output, "&#39;", "'", -1)
-	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space after
+	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space after.
 	output = strings.Replace(output, "&amp;amp; ", "& ", -1) // NB space after
 
 	return output
