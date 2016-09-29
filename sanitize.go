@@ -152,6 +152,8 @@ func HTML(s string) string {
 	output = template.HTMLEscapeString(output)
 
 	// After processing, remove some harmless entities &, ' and " which are encoded by HTMLEscapeString
+	output = strings.Replace(output, "&gt;", ">", -1)
+	output = strings.Replace(output, "&lt;", "<", -1)
 	output = strings.Replace(output, "&#34;", "\"", -1)
 	output = strings.Replace(output, "&#39;", "'", -1)
 	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space after
