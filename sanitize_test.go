@@ -116,13 +116,14 @@ var htmlTests = []Test{
 	{`<IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
 	{`<IMG SRC=JaVaScRiPt:alert('XSS')&gt;`, ``},
 	{`<IMG SRC="javascript:alert('XSS')" <test`, ``},
-    {`<a href="javascript:alert('XSS')" src="javascript:alert('XSS')" onclick="javascript:alert('XSS')"></a>`, ``},
+	{`<a href="javascript:alert('XSS')" src="javascript:alert('XSS')" onclick="javascript:alert('XSS')"></a>`, ``},
 	{`&gt & test &lt`, `&gt; & test &lt;`},
 	{`<img></IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>`, ``},
 	{`&#8220;hello&#8221; it&#8217;s for &#8216;real&#8217;`, `"hello" it's for 'real'`},
 	{`<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&
 #0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>`, ``},
 	{`'';!--"<XSS>=&{()}`, `'';!--"=&amp;{()}`},
+	{"LINE 1<br />\nLINE 2", "LINE 1\nLINE 2"},
 }
 
 func TestHTML(t *testing.T) {
@@ -180,7 +181,7 @@ var htmlTestsAllowing = []Test{
 	{`<IMG SRC="jav&#x09;ascript:alert('XSS');">`, `<img>`},
 	{`<HEAD><META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=UTF-7"> </HEAD>+ADw-SCRIPT+AD4-alert('XSS');+ADw-/SCRIPT+AD4-`, ` +ADw-SCRIPT+AD4-alert(&#39;XSS&#39;);+ADw-/SCRIPT+AD4-`},
 	{`<SCRIPT>document.write("<SCRI");</SCRIPT>PT SRC="http://ha.ckers.org/xss.js"></SCRIPT>`, `PT SRC=&#34;http://ha.ckers.org/xss.js&#34;&gt;`},
-    {`<a href="javascript:alert('XSS')" src="javascript:alert('XSS')" onclick="javascript:alert('XSS')"></a>`, `<a></a>`},
+	{`<a href="javascript:alert('XSS')" src="javascript:alert('XSS')" onclick="javascript:alert('XSS')"></a>`, `<a></a>`},
 	{`'';!--"<XSS>=&{()}`, `&#39;&#39;;!--&#34;=&amp;{()}`},
 	{`<IMG SRC=javascript:alert('XSS')`, ``},
 	{`<IMG """><SCRIPT>alert("XSS")</SCRIPT>">`, `<img>&#34;&gt;`},
