@@ -109,7 +109,7 @@ func HTML(s string) string {
 	} else {
 
 		// First remove line breaks etc as these have no meaning outside html tags (except pre)
-		// this means pre sections will lose formatting... but will result in less uninentional paras.
+		// this means pre sections will lose formatting... but will result in less unintentional paras.
 		s = strings.Replace(s, "\n", "", -1)
 
 		// Then replace line breaks with newlines, to preserve that formatting
