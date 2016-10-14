@@ -117,6 +117,7 @@ func HTML(s string) string {
 		s = strings.Replace(s, "<br>", "\n", -1)
 		s = strings.Replace(s, "</br>", "\n", -1)
 		s = strings.Replace(s, "<br/>", "\n", -1)
+		s = strings.Replace(s, "<br />", "\n", -1)
 
 		// Walk through the string removing all tags
 		b := bytes.NewBufferString("")
