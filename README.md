@@ -1,4 +1,4 @@
-sanitize
+sanitize [![GoDoc](https://godoc.org/github.com/kennygrant/sanitize?status.svg)](https://godoc.org/github.com/kennygrant/sanitize) [![Go Report Card](https://goreportcard.com/badge/github.com/kennygrant/sanitize)](https://goreportcard.com/report/github.com/kennygrant/sanitize) [![CircleCI](https://circleci.com/gh/kennygrant/sanitize.svg?style=svg)](https://circleci.com/gh/kennygrant/sanitize)
 ========
 
 Package sanitize provides functions to sanitize html and paths with go (golang).
