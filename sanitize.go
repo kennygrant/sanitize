@@ -99,9 +99,7 @@ func HTMLAllowing(s string, args ...[]string) (string, error) {
 
 // HTML strips html tags, replace common entities, and escapes <>&;'" in the result.
 // Note the returned text may contain entities as it is escaped by HTMLEscapeString, and most entities are not translated.
-func HTML(s string) string {
-
-	output := ""
+func HTML(s string) (output string) {
 
 	// Shortcut strings with no tags in them
 	if !strings.ContainsAny(s, "<>") {
