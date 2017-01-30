@@ -157,6 +157,7 @@ func HTML(s string) string {
 	output = strings.Replace(output, "&#34;", "\"", -1)
 	output = strings.Replace(output, "&#39;", "'", -1)
 	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space after
+	output = strings.Replace(output, "&amp;", "&", -1)       // NB space after
 	output = strings.Replace(output, "&amp;amp; ", "& ", -1) // NB space after
 
 	return output
