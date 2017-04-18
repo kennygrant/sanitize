@@ -14,12 +14,49 @@ import (
 )
 
 var (
-	ignoreTags = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object", "base"}
+	ignoreTags, defaultTags, defaultAttributes []string
+
+	harmlessEntities map[string]string
+
+	illegalPath, illegalName, baseNameSeparators   *regexp.Regexp
+	illegalAttr, legalHrefAttr, separators, dashes *regexp.Regexp
+)
+
+func init() {
 
 	defaultTags = []string{"h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "hr", "p", "br", "b", "i", "strong", "em", "ol", "ul", "li", "a", "img", "pre", "code", "blockquote"}
 
 	defaultAttributes = []string{"id", "class", "src", "href", "title", "alt", "name", "rel"}
-)
+
+	ignoreTags = []string{"title", "script", "style", "iframe", "frame", "frameset", "noframes", "noembed", "embed", "applet", "object", "base"}
+
+	// A list of characters we consider separators in normal strings and replace with our canonical separator - rather than removing.
+	separators = regexp.MustCompile(`[ &_=+:]`)
+
+	dashes = regexp.MustCompile(`[\-]+`)
+
+	harmlessEntities = map[string]string{
+		"&#8216;": "'",
+		"&#8217;": "'",
+		"&#8220;": "\"",
+		"&#8221;": "\"",
+		"&nbsp;":  " ",
+		"&quot;":  "\"",
+		"&apos;":  "'",
+	}
+
+	// We are very restrictive as this is intended for ASCII URL slugs
+	illegalPath = regexp.MustCompile(`[^[:alnum:]\~\-\./]`)
+	illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
+	// Replace these separators with -
+	baseNameSeparators = regexp.MustCompile(`[./]`)
+	// If the attribute contains data: or javascript: anywhere, ignore it
+	// we don't allow this in attributes as it is so frequently used for xss
+	// NB we allow spaces in the value, and lowercase.
+	illegalAttr = regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
+	// We are far more restrictive with href attributes.
+	legalHrefAttr = regexp.MustCompile(`\A[/#][^/\\]?|mailto://|http://|https://`)
+}
 
 // HTMLAllowing sanitizes html, allowing some tags.
 // Arrays of allowed tags and allowed attributes may optionally be passed as the second and third arguments.
@@ -135,32 +172,25 @@ func HTML(s string) (output string) {
 		output = b.String()
 	}
 
-	// Remove a few common harmless entities, to arrive at something more like plain text
-	output = strings.Replace(output, "&#8216;", "'", -1)
-	output = strings.Replace(output, "&#8217;", "'", -1)
-	output = strings.Replace(output, "&#8220;", "\"", -1)
-	output = strings.Replace(output, "&#8221;", "\"", -1)
-	output = strings.Replace(output, "&nbsp;", " ", -1)
-	output = strings.Replace(output, "&quot;", "\"", -1)
-	output = strings.Replace(output, "&apos;", "'", -1)
+	// Remove a few common harmless entities, to arrive at something more like plain text.
+	for entity, replacement := range harmlessEntities {
+		output = strings.Replace(output, entity, replacement, -1)
+	}
 
-	// Translate some entities into their plain text equivalent (for example accents, if encoded as entities)
+	// Translate some entities into their plain text equivalent (for example accents, if encoded as entities).
 	output = html.UnescapeString(output)
 
 	// In case we have missed any tags above, escape the text - removes <, >, &, ' and ".
 	output = template.HTMLEscapeString(output)
 
-	// After processing, remove some harmless entities &, ' and " which are encoded by HTMLEscapeString
+	// After processing, remove some harmless entities &, ' and " which are encoded by HTMLEscapeString.
 	output = strings.Replace(output, "&#34;", "\"", -1)
 	output = strings.Replace(output, "&#39;", "'", -1)
-	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space after
+	output = strings.Replace(output, "&amp; ", "& ", -1)     // NB space after.
 	output = strings.Replace(output, "&amp;amp; ", "& ", -1) // NB space after
 
 	return output
 }
-
-// We are very restrictive as this is intended for ascii url slugs
-var illegalPath = regexp.MustCompile(`[^[:alnum:]\~\-\./]`)
 
 // Path makes a string safe to use as an url path.
 func Path(s string) string {
@@ -176,9 +206,6 @@ func Path(s string) string {
 	return filePath
 }
 
-// Remove all other unrecognised characters apart from
-var illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
-
 // Name makes a string safe to use in a file name by first finding the path basename, then replacing non-ascii characters.
 func Name(s string) string {
 	// Start with lowercase string
@@ -191,9 +218,6 @@ func Name(s string) string {
 	// NB this may be of length 0, caller must check
 	return fileName
 }
-
-// Replace these separators with -
-var baseNameSeparators = regexp.MustCompile(`[./]`)
 
 // BaseName makes a string safe to use in a file name, producing a sanitized basename replacing . or / with -.
 // No attempt is made to normalise a path or normalise case.
@@ -300,16 +324,6 @@ func Accents(s string) string {
 	return b.String()
 }
 
-var (
-	// If the attribute contains data: or javascript: anywhere, ignore it
-	// we don't allow this in attributes as it is so frequently used for xss
-	// NB we allow spaces in the value, and lowercase.
-	illegalAttr = regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
-
-	// We are far more restrictive with href attributes.
-	legalHrefAttr = regexp.MustCompile(`\A[/#][^/\\]?|mailto://|http://|https://`)
-)
-
 // cleanAttributes returns an array of attributes after removing malicious ones.
 func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute {
 	if len(a) == 0 {
@@ -342,13 +356,6 @@ func cleanAttributes(a []parser.Attribute, allowed []string) []parser.Attribute 
 	}
 	return cleaned
 }
-
-// A list of characters we consider separators in normal strings and replace with our canonical separator - rather than removing.
-var (
-	separators = regexp.MustCompile(`[ &_=+:]`)
-
-	dashes = regexp.MustCompile(`[\-]+`)
-)
 
 // cleanString replaces separators with - and removes characters listed in the regexp provided from string.
 // Accents, spaces, and all characters not in A-Za-z0-9 are replaced.
