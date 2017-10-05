@@ -162,14 +162,18 @@ func HTML(s string) (output string) {
 // We are very restrictive as this is intended for ascii url slugs
 var illegalPath = regexp.MustCompile(`[^[:alnum:]\~\-\./]`)
 
-// Path makes a string safe to use as an url path.
+// Path makes a string safe to use as a URL path,
+// removing accents and replacing separators with -.
+// The path may still start at / and is not intended
+// for use as a file system path without prefix.
 func Path(s string) string {
 	// Start with lowercase string
 	filePath := strings.ToLower(s)
 	filePath = strings.Replace(filePath, "..", "", -1)
 	filePath = path.Clean(filePath)
 
-	// Remove illegal characters for paths, flattening accents and replacing some common separators with -
+	// Remove illegal characters for paths, flattening accents
+	// and replacing some common separators with -
 	filePath = cleanString(filePath, illegalPath)
 
 	// NB this may be of length 0, caller must check
