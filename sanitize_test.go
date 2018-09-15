@@ -20,7 +20,7 @@ var urls = []Test{
 	{"/../../4-icon.jpg", `/4-icon.jpg`},
 	{"/Images_dir/../4-icon.jpg", `/images-dir/4-icon.jpg`},
 	{"../4 icon.*", `/4-icon.`},
-	{"Spac ey/Nôm/test før url", `spac-ey/nom/test-foer-url`},
+	{"Spac ey/Nôm/test før url", `spac-ey/nom/test-for-url`},
 	{"../*", `/`},
 }
 
@@ -52,8 +52,8 @@ var fileNames = []Test{
 	{"/Images/../4-icon.jpg", `4-icon.jpg`},
 	{"../4 icon.jpg", `4-icon.jpg`},
 	{"../4 icon-testé *8%^\"'\".jpg ", `4-icon-teste-8.jpg`},
-	{"Überfluß an Döner macht schöner.JPEG", `ueberfluss-an-doener-macht-schoener.jpeg`},
-	{"Ä-_-Ü_:()_Ö-_-ä-_-ü-_-ö-_ß.webm", `ae-ue-oe-ae-ue-oe-ss.webm`},
+	{"Überfluß an Döner macht schöner.JPEG", `uberfluss-an-doner-macht-schoner.jpeg`},
+	{"Ä-_-Ü_:()_Ö-_-ä-_-ü-_-ö-_ß.webm", `a-u-o-a-u-o-ss.webm`},
 }
 
 func TestName(t *testing.T) {
