@@ -234,3 +234,29 @@ func BenchmarkHTMLAllowed(b *testing.B) {
 		}
 	}
 }
+
+var alphanumerics = []Test{
+	{"#$ferf*", "ferf"},
+	{"aall$%", "aall"},
+	{"EFFFG^&", "EFFFG"},
+}
+
+func TestAlphanumeric(t *testing.T) {
+	for _, test := range alphanumerics {
+		output := Alphanumeric(test.input)
+		if output != test.expected {
+			t.Fatalf(Format, test.input, test.expected, output)
+		}
+	}
+}
+
+func BenchmarkAlphanumeric(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, test := range alphanumerics {
+			output := Alphanumeric(test.input)
+			if output != test.expected {
+				b.Fatalf(Format, test.input, test.expected, output)
+			}
+		}
+	}
+}
