@@ -6,6 +6,7 @@ import (
 	"html"
 	"html/template"
 	"io"
+	"log"
 	"path"
 	"regexp"
 	"strings"
@@ -303,6 +304,19 @@ func Accents(s string) string {
 		}
 	}
 	return b.String()
+}
+
+// Get alphanumeric strings only
+func Alphanumeric(s string) string {
+
+	// Make a Regex to say we only want
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	processedString := reg.ReplaceAllString(s, "")
+
+	return processedString
 }
 
 var (
