@@ -386,3 +386,9 @@ func includes(a []string, s string) bool {
 	}
 	return false
 }
+
+// Apply Every function in the package
+func All(s string)string{
+	step1:=Name(Path(HTML(s)))
+	return Accents(BaseName(step1))
+}
