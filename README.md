@@ -42,9 +42,20 @@ sanitize.Path(s string) string
 
 Path makes a string safe to use as an url path.
 
+```go
+sanitize.All(s string) string
+```
+
+All apply all the sanitize functions
 
 Changes
 -------
+
+Version 1.3
+
+Added All that apply all the default sanitize functions
+
+
 
 Version 1.2
 
