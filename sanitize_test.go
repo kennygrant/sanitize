@@ -206,6 +206,8 @@ var htmlTestsAllowing = []Test{
 	{`<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&
 #0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>`, `<img>`},
 	{`<a href="mailto:cool@test.com?subject=cooool">cool guy</a>`, `<a href="mailto:cool@test.com?subject=cooool">cool guy</a>`},
+	{`<a href="tel:123123123">123123123</a>`, `<a href="tel:123123123">123123123</a>`},
+	{`<a href="skype:some">some</a>`, `<a href="skype:some">some</a>`},
 }
 
 func TestHTMLAllowed(t *testing.T) {

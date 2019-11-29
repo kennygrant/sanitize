@@ -312,7 +312,7 @@ var (
 	illegalAttr = regexp.MustCompile(`(d\s*a\s*t\s*a|j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*)\s*:`)
 
 	// We are far more restrictive with href attributes.
-	legalHrefAttr = regexp.MustCompile(`\A[/#][^/\\]?|mailto:|http://|https://`)
+	legalHrefAttr = regexp.MustCompile(`\A[/#][^/\\]?|\w+:|http://|https://`)
 )
 
 // cleanAttributes returns an array of attributes after removing malicious ones.
