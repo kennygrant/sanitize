@@ -181,7 +181,7 @@ func Path(s string) string {
 }
 
 // Remove all other unrecognised characters apart from
-var illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
+var illegalName = regexp.MustCompile(`[^[:alnum:]-_.]`)
 
 // Name makes a string safe to use in a file name by first finding the path basename, then replacing non-ascii characters.
 func Name(s string) string {
